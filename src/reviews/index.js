@@ -19,11 +19,11 @@ const reviewsJson = join(dirname(fileURLToPath(import.meta.url)), '../data/jsonD
 router.get('/:imdbID', async (req, res, next) => {
   try {
     const reviews = await fs.readJson(reviewsJson)
-    const selectedReviews = reviews.filter(review.imdbID === req.params.imdbID)
-    if (!selectedReviews) {
+    const selectedReviews = reviews.filter(review => review.imdbID === req.params.imdbID)
+    if (selectedReviews.index === -1) {
       res.send({msg: 'No comment found!'})
     } else { 
-      res.status(200).send(media)
+      res.status(200).send(reviews)
     }
   } catch (error) {
     console.log(error)
@@ -31,7 +31,7 @@ router.get('/:imdbID', async (req, res, next) => {
   }
 })
 
-router.post('/imdbID', reviewsValidator, async(req, res, next) => {
+router.post('/:imdbID', reviewsValidator, async(req, res, next) => {
   try {
     const validationErrors = validationResult(req)
 
@@ -50,14 +50,16 @@ router.post('/imdbID', reviewsValidator, async(req, res, next) => {
       error.httpStatusCode = 404
       next(error)
     }
+    const reviews = await fs.readJson(reviewsJson)
     const newReview = {
       ...req.body,
       _id: uniqid(),
       imdbID: req.params.imdbID,
       createdAt: new Date()
     }
-    media.push(newReview)
-    await fs.writeJson(mediaJson, media)
+    reviews.push(newReview)
+    await fs.writeJson(reviewsJson, reviews)
+    res.status(201).send(newReview)
   } catch (error) {
     console.log(error)
     next(error)
