@@ -3,7 +3,7 @@ import listEndpoints from 'express-list-endpoints'
 import cors from 'cors'
 //ROUTES
 import mediaRoutes from './media/index.js'
-import reviewRoutes from './review/index.js'
+import reviewRoutes from './reviews/index.js'
 //ERRORHANDLER
 import {err400BadReqHandler, err404NotFoundHandler, err401UnauthorizedHandler, err403ForbidHandler, genericErrorHandler} from './errorHandlers.js'
 
