@@ -61,9 +61,9 @@ router.post('/', movieValidator, async (req, res, next) => {
     }
     media.push(newMedium)
     await fs.writeJson(mediaJson, media)
-    res.status(201).send('Data send ', newMedium)
+    res.status(201).send(newMedium)
   } catch (error) {
-    console.lof(error)
+    console.log(error)
     next(error)
   }
 })
@@ -128,12 +128,14 @@ router.delete('/:imdbID', async (req, res, next) => {
       const error = new Error({ errMsg: "Medium not found!"})
       error.httpStatusCode = 404
       next(error)
+    } else {
+      const modMedia = media.filter(medium => medium.imdbID !== req.params.imdbID)
+      await fs.writeJson(mediaJson, modMedia)
+      res.status(204).send()
     }
-    const modMedia = media.filter(medium => medium.imdbID !== req.params.imdbID)
-    await fs.writeJson(mediaJson, modMedia)
-    res.status(204)
   } catch (error) {
-
+    console.log(error)
+    next(error)
   }
 })
 
