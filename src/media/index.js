@@ -5,6 +5,8 @@ import fs from 'fs-extra'
 import uniqid from 'uniqid'
 import multer from 'multer'
 import { check, validationResult } from 'express-validator'
+import {CloudinaryStorage} from 'multer-storage-cloudinary'
+import { v2 } from 'cloudinary'
 
 const router = Router()
 
@@ -16,6 +18,12 @@ const movieValidator = [
 
 const mediaJson = join(dirname(fileURLToPath(import.meta.url)), '../data/jsonData/media.json')
 const reviewsJson = join(dirname(fileURLToPath(import.meta.url)), '../data/jsonData/reviews.json')
+
+const cloudinaryStorage = new CloudinaryStorage({
+  cloudinary: v2,
+  params: {folder: 'img'},
+})
+const uploader = multer({storage: cloudinaryStorage})
 
 router.get('/', async (req, res, next) => {
   try {
@@ -60,12 +68,36 @@ router.post('/', movieValidator, async (req, res, next) => {
   }
 })
 
+router.post('/:imdbID', uploader.single('image'), async(req, res, next) => {
+  try {
+    const media = await fs.readJson(mediaJson)
+    const mediumIdx = media.findIndex(medium => medium.imdbID === req.params.imdbID)
+    if (mediumIdx !== -1) {
+      const modMedia = media.filter(medium => medium.imdbID !== req.params.id)
+      let selectedMedium = media.find(medium => medium.imdbID === req.params.imdbID)
+      selectedMedium.Poster = req.file.path
+      modMedia.push(selectedMedium)
+      await fs.writeJson(mediaJson, modMedia)
+      res.send({
+        selectedMedium
+      })
+    } else {
+      const error = new Error({ errMsg: "Medium not found!"})
+      error.httpStatusCode = 404
+      next(error)
+    }
+  } catch (error) {
+    console.log(error)
+    next(error)
+  }
+})
+
 router.put('/:imdbID', async (req, res, next) => {
   try {
     const media = await fs.readJson(mediaJson)
-    const selectedMedium = media.find(medium => medium.imdbID === req.params.imdbID)
+    const mediumIdx = media.findIndex(medium => medium.imdbID === req.params.imdbID)
     
-    if(!selectedMedium) {
+    if(mediumIdx <= -1) {
       const error = new Error({ errMsg: "Medium not found!"})
       error.httpStatusCode = 404
       next(error)
@@ -91,8 +123,8 @@ router.put('/:imdbID', async (req, res, next) => {
 router.delete('/:imdbID', async (req, res, next) => {
   try {
     const media = await fs.readJson(mediaJson)
-    const findMedium = media.find(medium => medium.imdbID === req.params.imdbID)
-    if (!findMedium) {
+    const mediumIdx = media.findIndex(medium => medium.imdbID === req.params.imdbID)
+    if (mediumIdx <= -1) {
       const error = new Error({ errMsg: "Medium not found!"})
       error.httpStatusCode = 404
       next(error)
