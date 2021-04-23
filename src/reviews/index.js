@@ -23,7 +23,7 @@ router.get('/:imdbID', async (req, res, next) => {
     if (reviewIndex !== -1) {
       res.status(200).send(reviews[reviewIndex])
     } else { 
-      res.send({msg: 'No comment found!'})
+      res.send('No comment found!')
     }
   } catch (error) {
     console.log(error)
