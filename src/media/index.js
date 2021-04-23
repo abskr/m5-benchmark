@@ -17,7 +17,6 @@ const movieValidator = [
 ];
 
 const mediaJson = join(dirname(fileURLToPath(import.meta.url)), '../data/jsonData/media.json')
-const reviewsJson = join(dirname(fileURLToPath(import.meta.url)), '../data/jsonData/reviews.json')
 
 const cloudinaryStorage = new CloudinaryStorage({
   cloudinary: v2,

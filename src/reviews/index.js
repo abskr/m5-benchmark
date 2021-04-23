@@ -115,7 +115,7 @@ router.delete('/:imdbID/comment/:_id', async (req, res, next) => {
   try {
     const media = await fs.readJson(mediaJson)
     const findMedia = media.find(medium => medium.imdbID === req.params.imdbID)
-    if (findMedia.length === 0) {
+    if (!findMedia) {
       const error = new Error({
         errMsg: "Medium not found!"
       })
@@ -125,16 +125,18 @@ router.delete('/:imdbID/comment/:_id', async (req, res, next) => {
 
     const reviews = await fs.readJson(reviewsJson)
     const findReview = reviews.find(review => review._id === req.params._id)
-    if (findReview.length === 0) {
+    if (!findReview) {
       const error = new Error({
         errMsg: "Review not found!"
       })
       error.httpStatusCode = 404
       next(error)
+    } else {
+      const modReviews = reviews.filter(review => review._id !== req.params._id)
+      await fs.writeJson(reviewsJson, modReviews)
+      res.status(204).send()
     }
-    const modReviews = reviews.filter(review => review._id !== req.params._id)
-    await fs.writeJson(reviewsJson, modReviews)
-    res.status(204)
+
   } catch (error) {
     console.log(error)
     next(error)
